@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "plan-entries")
@@ -16,7 +17,7 @@ public class PlanEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String Uuid;
+    private UUID Uuid;
     private String content;
     private LocalDate date;
     @ManyToOne

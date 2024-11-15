@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .authorizeHttpRequests(c -> c
+                        .requestMatchers("/api/users/register").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();
