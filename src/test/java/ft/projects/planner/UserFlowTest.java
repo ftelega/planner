@@ -2,15 +2,20 @@ package ft.projects.planner;
 
 import ft.projects.planner.model.User;
 import ft.projects.planner.model.UserRequest;
+import ft.projects.planner.repository.PlanEntryRepository;
 import ft.projects.planner.repository.UserRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import static ft.projects.planner.Constants.*;
 import static io.restassured.RestAssured.*;
@@ -30,14 +35,14 @@ public class UserFlowTest extends AbstractIntegrationTest {
                         .password(passwordEncoder.encode(AUTH_PASSWORD))
                         .build()
         );
-        var res = when()
-                .post("/")
-                .then()
-                .cookie(CSRF_COOKIE_NAME)
-                .extract();
-        csrfToken = res.cookie(CSRF_COOKIE_NAME);
+        csrfToken = getCsrfToken();
     }
 
+    @AfterAll
+    public static void clear(@Autowired UserRepository userRepository, @Autowired PlanEntryRepository planEntryRepository) {
+        userRepository.deleteAll();
+        planEntryRepository.deleteAll();
+    }
 
     @Test
     public void givenValidCsrf_whenRegister_thenStatusCreated() {
@@ -82,7 +87,7 @@ public class UserFlowTest extends AbstractIntegrationTest {
         given()
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
                 .header(CSRF_HEADER_NAME, csrfToken)
-                .auth().basic(AUTH_USERNAME, AUTH_PASSWORD)
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((AUTH_USERNAME + ":" + AUTH_PASSWORD).getBytes(StandardCharsets.UTF_8)))
                 .when()
                 .post("/api/users/login")
                 .then()
@@ -94,7 +99,7 @@ public class UserFlowTest extends AbstractIntegrationTest {
         given()
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
                 .header(CSRF_HEADER_NAME, csrfToken)
-                .auth().basic("invalid", "invalid")
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString(("invalid").getBytes(StandardCharsets.UTF_8)))
                 .when()
                 .post("/api/users/login")
                 .then()
@@ -117,7 +122,7 @@ public class UserFlowTest extends AbstractIntegrationTest {
         given()
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
                 .header(CSRF_HEADER_NAME, "invalid")
-                .auth().basic(AUTH_USERNAME, AUTH_PASSWORD)
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((AUTH_USERNAME + ":" + AUTH_PASSWORD).getBytes(StandardCharsets.UTF_8)))
                 .when()
                 .post("/api/users/login")
                 .then()
@@ -128,7 +133,7 @@ public class UserFlowTest extends AbstractIntegrationTest {
     public void givenNoCsrf_whenLogin_thenStatusForbidden() {
         given()
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
-                .auth().basic(AUTH_USERNAME, AUTH_PASSWORD)
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((AUTH_USERNAME + ":" + AUTH_PASSWORD).getBytes(StandardCharsets.UTF_8)))
                 .when()
                 .post("/api/users/login")
                 .then()
@@ -136,8 +141,8 @@ public class UserFlowTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void givenValidSessionAndCsrf_whenLogout_thenStatusOk() {
-        final String sessionId = getAuthorizedSessionId();
+    public void givenValidSessionAndCsrf_whenLogout_thenStatusNoContentAndInvalidateSession() {
+        final String sessionId = getAuthorizedSessionId(csrfToken);
         given()
                 .cookie(SESSION_COOKIE_NAME, sessionId)
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
@@ -146,11 +151,19 @@ public class UserFlowTest extends AbstractIntegrationTest {
                 .post("/api/users/logout")
                 .then()
                 .statusCode(204);
+        given()
+                .cookie(SESSION_COOKIE_NAME, sessionId)
+                .cookie(CSRF_COOKIE_NAME, csrfToken)
+                .header(CSRF_HEADER_NAME, csrfToken)
+                .when()
+                .post("/")
+                .then()
+                .statusCode(401);
     }
 
     @Test
     public void givenInvalidCsrf_whenLogout_thenStatusForbidden() {
-        final String sessionId = getAuthorizedSessionId();
+        final String sessionId = getAuthorizedSessionId(csrfToken);
         given()
                 .cookie(SESSION_COOKIE_NAME, sessionId)
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
@@ -163,7 +176,7 @@ public class UserFlowTest extends AbstractIntegrationTest {
 
     @Test
     public void givenNoCsrf_whenLogout_thenStatusForbidden() {
-        final String sessionId = getAuthorizedSessionId();
+        final String sessionId = getAuthorizedSessionId(csrfToken);
         given()
                 .cookie(SESSION_COOKIE_NAME, sessionId)
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
@@ -171,19 +184,5 @@ public class UserFlowTest extends AbstractIntegrationTest {
                 .post("/api/users/logout")
                 .then()
                 .statusCode(403);
-    }
-
-    public String getAuthorizedSessionId() {
-        return given()
-                .cookie(CSRF_COOKIE_NAME, csrfToken)
-                .header(CSRF_HEADER_NAME, csrfToken)
-                .auth().basic(AUTH_USERNAME, AUTH_PASSWORD)
-                .when()
-                .post("/api/users/login")
-                .then()
-                .statusCode(200)
-                .cookie(SESSION_COOKIE_NAME)
-                .extract()
-                .cookie(SESSION_COOKIE_NAME);
     }
 }

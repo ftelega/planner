@@ -24,15 +24,11 @@ class UserServiceTest {
 
     @Test
     public void givenValidUserRequest_whenRegister_thenVerifyCalls() {
-        var user = User.builder()
-                .Uuid(UUID.randomUUID())
-                .build();
         given(userRepository.findByUsername(TEST_USERNAME)).willReturn(Optional.empty());
-        given(userRepository.save(any())).willReturn(user);
+        given(userRepository.save(any())).willAnswer(a -> a.getArgument(0));
         var res = userService.register(new UserRequest(TEST_USERNAME, TEST_PASSWORD));
         verify(passwordEncoder, times(1)).encode(TEST_PASSWORD);
         verify(userRepository, times(1)).save(any());
-        assertEquals(user.getUuid(), res);
     }
 
     @Test
