@@ -1,8 +1,10 @@
 package ft.projects.planner.service;
 
 import ft.projects.planner.exception.PlannerException;
+import ft.projects.planner.model.RegisterResponse;
 import ft.projects.planner.model.User;
 import ft.projects.planner.model.UserRequest;
+import ft.projects.planner.model.UserResponse;
 import ft.projects.planner.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,11 +26,14 @@ class UserServiceTest {
 
     @Test
     public void givenValidUserRequest_whenRegister_thenVerifyCalls() {
+        var uuid = UUID.randomUUID();
         given(userRepository.findByUsername(TEST_USERNAME)).willReturn(Optional.empty());
-        given(userRepository.save(any())).willAnswer(a -> a.getArgument(0));
-        var res = userService.register(new UserRequest(TEST_USERNAME, TEST_PASSWORD));
+        given(userRepository.save(any())).willReturn(User.builder().Uuid(uuid).build());
+        RegisterResponse res = userService.register(new UserRequest(TEST_USERNAME, TEST_PASSWORD));
         verify(passwordEncoder, times(1)).encode(TEST_PASSWORD);
         verify(userRepository, times(1)).save(any());
+        assertNotNull(res);
+        assertEquals(uuid.toString(), res.userId());
     }
 
     @Test
@@ -77,7 +82,7 @@ class UserServiceTest {
                 .username(TEST_USERNAME)
                 .build();
         given(securityService.getCurrentUserFromAuthentication()).willReturn(user);
-        var res = userService.login();
+        UserResponse res = userService.login();
         verify(securityService, times(1)).getCurrentUserFromAuthentication();
         assertNotNull(res);
         assertEquals(user.getUsername(), res.username());

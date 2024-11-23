@@ -33,7 +33,7 @@ class PlanEntryControllerTest {
     }
 
     @Test
-    public void givenValidRequest_whenCreatePlanEntry_thenStatusCreated() throws Exception {
+    public void givenServiceNotThrow_whenCreatePlanEntry_thenStatusCreated() throws Exception {
         var res = mockMvc.perform(MockMvcRequestBuilders.post("/api/plan-entries/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new PlanEntryRequest(null))));
@@ -41,7 +41,7 @@ class PlanEntryControllerTest {
     }
 
     @Test
-    public void givenInvalidRequest_whenCreatePlanEntry_thenStatusBadRequest() throws Exception {
+    public void givenServiceThrows_whenCreatePlanEntry_thenStatusBadRequest() throws Exception {
         given(planEntryService.createPlanEntry(any())).willThrow(new PlannerException(Exceptions.INVALID_CONTENT));
         var res = mockMvc.perform(MockMvcRequestBuilders.post("/api/plan-entries/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -50,7 +50,7 @@ class PlanEntryControllerTest {
     }
 
     @Test
-    public void givenValidRequest_whenGetAllPlanEntries_thenStatusOk() throws Exception {
+    public void whenGetUserPlanEntries_thenStatusOk() throws Exception {
         var res = mockMvc.perform(MockMvcRequestBuilders.get("/api/plan-entries"));
         res.andExpect(MockMvcResultMatchers.status().isOk());
     }

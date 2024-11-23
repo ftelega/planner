@@ -18,7 +18,7 @@ class SecurityServiceTest {
     public void givenAuthenticationAndUserDetailsImpl_whenGettingUserFromAuthentication_thenCorrectUserReturned() {
         var user = new User();
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(user), null, List.of()));
-        var res = securityService.getCurrentUserFromAuthentication();
+        User res = securityService.getCurrentUserFromAuthentication();
         assertEquals(user, res);
     }
 

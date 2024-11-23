@@ -2,7 +2,6 @@ package ft.projects.planner;
 
 import ft.projects.planner.model.User;
 import ft.projects.planner.model.UserRequest;
-import ft.projects.planner.repository.PlanEntryRepository;
 import ft.projects.planner.repository.UserRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -39,9 +38,8 @@ public class UserFlowTest extends AbstractIntegrationTest {
     }
 
     @AfterAll
-    public static void clear(@Autowired UserRepository userRepository, @Autowired PlanEntryRepository planEntryRepository) {
+    public static void clear(@Autowired UserRepository userRepository) {
         userRepository.deleteAll();
-        planEntryRepository.deleteAll();
     }
 
     @Test

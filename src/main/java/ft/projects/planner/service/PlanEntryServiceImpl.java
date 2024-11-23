@@ -2,6 +2,7 @@ package ft.projects.planner.service;
 
 import ft.projects.planner.exception.Exceptions;
 import ft.projects.planner.exception.PlannerException;
+import ft.projects.planner.model.CreatePlanEntryResponse;
 import ft.projects.planner.model.PlanEntry;
 import ft.projects.planner.model.PlanEntryRequest;
 import ft.projects.planner.model.PlanEntryResponse;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,22 +21,24 @@ public class PlanEntryServiceImpl implements PlanEntryService {
     private final SecurityService securityService;
 
     @Override
-    public UUID createPlanEntry(PlanEntryRequest planEntryRequest) {
+    public CreatePlanEntryResponse createPlanEntry(PlanEntryRequest planEntryRequest) {
         var content = planEntryRequest.content();
         validateContent(content);
-        return planEntryRepository.save(
+        var uuid = planEntryRepository.save(
                 PlanEntry.builder()
                         .content(content)
                         .date(LocalDate.now())
                         .user(securityService.getCurrentUserFromAuthentication())
                         .build()
-        ).getUuid();
+        ).getUuid().toString();
+        return new CreatePlanEntryResponse(uuid);
     }
 
     @Override
     public List<PlanEntryResponse> getAllPlanEntries() {
         return planEntryRepository.findAll()
                 .stream()
+                .filter(p -> p.getUser().getUsername().equals(securityService.getCurrentUserFromAuthentication().getUsername()))
                 .map(p -> new PlanEntryResponse(p.getContent(), p.getDate()))
                 .toList();
     }

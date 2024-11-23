@@ -2,6 +2,7 @@ package ft.projects.planner.service;
 
 import ft.projects.planner.exception.Exceptions;
 import ft.projects.planner.exception.PlannerException;
+import ft.projects.planner.model.RegisterResponse;
 import ft.projects.planner.model.User;
 import ft.projects.planner.model.UserRequest;
 import ft.projects.planner.model.UserResponse;
@@ -11,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,19 +22,20 @@ public class UserServiceImpl implements UserService {
     private final SecurityService securityService;
 
     @Override
-    public UUID register(UserRequest userRequest) {
+    public RegisterResponse register(UserRequest userRequest) {
         var username = userRequest.username();
         var password = userRequest.password();
         validateUserExistence(username);
         validateUsername(username);
         validatePassword(password);
-        return userRepository.save(
+        var uuid = userRepository.save(
                 User.builder()
                         .username(username)
                         .password(passwordEncoder.encode(password))
                         .planEntries(new ArrayList<>())
                         .build()
-        ).getUuid();
+        ).getUuid().toString();
+        return new RegisterResponse(uuid);
     }
 
     @Override

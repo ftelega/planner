@@ -33,7 +33,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void givenValidRequest_whenRegister_thenStatusCreated() throws Exception {
+    public void givenServiceNotThrows_whenRegister_thenStatusCreated() throws Exception {
         var res = mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new UserRequest(null, null))));
@@ -41,7 +41,7 @@ class UserControllerTest {
     }
 
     @Test
-    public void givenInvalidRequest_whenRegister_thenStatusBadRequest() throws Exception {
+    public void givenServiceThrows_whenRegister_thenStatusBadRequest() throws Exception {
         given(userService.register(any())).willThrow(new PlannerException(Exceptions.INVALID_PASSWORD));
         var res = mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
