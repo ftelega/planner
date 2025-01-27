@@ -29,7 +29,7 @@ public class OpenApiConfiguration {
                                         .description("Logs out the current user from the application")
                                         .operationId("logoutUser")
                                         .responses(new ApiResponses()
-                                                .addApiResponse("204", new ApiResponse().description("Successfully logged out"))
+                                                .addApiResponse("200", new ApiResponse().description("Successfully logged out"))
                                                 .addApiResponse("403", new ApiResponse().description("Invalid Csrf Token"))
                                         )
                                         .parameters(List.of(new Parameter().name("X-XSRF-TOKEN").description("Csrf Token Header").required(true).allowEmptyValue(true).in("header")))

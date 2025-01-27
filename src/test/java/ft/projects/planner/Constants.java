@@ -12,11 +12,10 @@ public interface Constants {
     String CSRF_COOKIE_NAME = "XSRF-TOKEN";
     String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
     int PORT = 7777;
-    String AUTH_USERNAME = "admin";
-    String AUTH_PASSWORD = "fgymevoli";
     String TEST_USERNAME = "username";
     String TEST_PASSWORD = "password";
     String TEST_CONTENT = "content";
+
     static String getCsrfToken() {
         return when()
                 .post("/")
@@ -25,11 +24,12 @@ public interface Constants {
                 .extract()
                 .cookie(CSRF_COOKIE_NAME);
     }
-    static String getAuthorizedSessionId(String csrfToken) {
+
+    static String getAuthorizedSessionId(String csrfToken, String username, String password) {
         return given()
                 .cookie(CSRF_COOKIE_NAME, csrfToken)
                 .header(CSRF_HEADER_NAME, csrfToken)
-                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((AUTH_USERNAME + ":" + AUTH_PASSWORD).getBytes(StandardCharsets.UTF_8)))
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8)))
                 .when()
                 .post("/api/users/login")
                 .then()

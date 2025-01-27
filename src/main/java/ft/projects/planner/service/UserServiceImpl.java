@@ -2,7 +2,6 @@ package ft.projects.planner.service;
 
 import ft.projects.planner.exception.Exceptions;
 import ft.projects.planner.exception.PlannerException;
-import ft.projects.planner.model.RegisterResponse;
 import ft.projects.planner.model.User;
 import ft.projects.planner.model.UserRequest;
 import ft.projects.planner.model.UserResponse;
@@ -22,27 +21,25 @@ public class UserServiceImpl implements UserService {
     private final SecurityService securityService;
 
     @Override
-    public RegisterResponse register(UserRequest userRequest) {
+    public UserResponse register(UserRequest userRequest) {
         var username = userRequest.username();
         var password = userRequest.password();
         validateUserExistence(username);
         validateUsername(username);
         validatePassword(password);
-        var uuid = userRepository.save(
+        var user = userRepository.save(
                 User.builder()
                         .username(username)
                         .password(passwordEncoder.encode(password))
-                        .planEntries(new ArrayList<>())
                         .build()
-        ).getUuid().toString();
-        return new RegisterResponse(uuid);
+        );
+        return new UserResponse(user.getUuid().toString(), user.getUsername());
     }
 
     @Override
     public UserResponse login() {
-        return new UserResponse(
-                securityService.getCurrentUserFromAuthentication().getUsername()
-        );
+        var user = securityService.getCurrentUserFromAuthentication();
+        return new UserResponse(user.getUuid().toString(), user.getUsername());
     }
 
     private void validateUserExistence(String username) {

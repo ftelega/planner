@@ -1,7 +1,6 @@
 package ft.projects.planner.controller;
 
 import ft.projects.planner.exception.PlannerExceptionResponse;
-import ft.projects.planner.model.CreatePlanEntryResponse;
 import ft.projects.planner.model.PlanEntryRequest;
 import ft.projects.planner.model.PlanEntryResponse;
 import ft.projects.planner.service.PlanEntryService;
@@ -31,7 +30,7 @@ public class PlanEntryController {
 
     @Operation(summary = "Create Plan Entry", description = "Create User's Plan Entry", tags = { "plan-entry" })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Successfully created user's plan entry", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CreatePlanEntryResponse.class)) }),
+            @ApiResponse(responseCode = "201", description = "Successfully created user's plan entry", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = PlanEntryResponse.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid Request Body", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = PlannerExceptionResponse.class)) }),
             @ApiResponse(responseCode = "403", description = "Invalid Csrf Token", content = {  @Content() }),
             @ApiResponse(responseCode = "401", description = "Unauthorized, please login with the login endpoint first", content = {  @Content() })
@@ -39,7 +38,7 @@ public class PlanEntryController {
     )
     @Parameter(name = "X-XSRF-TOKEN", description = "Csrf Token Header", required = true, in = ParameterIn.HEADER, allowEmptyValue = true)
     @PostMapping(path = "/create")
-    public ResponseEntity<CreatePlanEntryResponse> createPlanEntry(@RequestBody PlanEntryRequest planEntryRequest) {
+    public ResponseEntity<PlanEntryResponse> createPlanEntry(@RequestBody PlanEntryRequest planEntryRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(planEntryService.createPlanEntry(planEntryRequest));
     }
 
@@ -52,6 +51,6 @@ public class PlanEntryController {
     )
     @GetMapping
     public ResponseEntity<List<PlanEntryResponse>> getAllPlanEntries() {
-        return ResponseEntity.status(HttpStatus.OK).body(planEntryService.getAllPlanEntries());
+        return ResponseEntity.status(HttpStatus.OK).body(planEntryService.getUserPlanEntries());
     }
 }

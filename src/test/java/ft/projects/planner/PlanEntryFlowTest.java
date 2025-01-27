@@ -4,7 +4,6 @@ import ft.projects.planner.model.PlanEntryRequest;
 import ft.projects.planner.model.User;
 import ft.projects.planner.repository.PlanEntryRepository;
 import ft.projects.planner.repository.UserRepository;
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.ArrayList;
 
 import static ft.projects.planner.Constants.*;
 import static io.restassured.RestAssured.*;
@@ -28,22 +25,20 @@ public class PlanEntryFlowTest extends AbstractIntegrationTest {
 
     @BeforeAll
     public static void saveAuthUserAndGenerateCookies(@Autowired UserRepository userRepository, @Autowired PasswordEncoder passwordEncoder) {
-        RestAssured.port = PORT;
-        userRepository.save(
-                User.builder()
-                        .username(AUTH_USERNAME)
-                        .password(passwordEncoder.encode(AUTH_PASSWORD))
-                        .planEntries(new ArrayList<>())
-                        .build()
+        port = PORT;
+        userRepository.save(User.builder()
+                .username(TEST_USERNAME)
+                .password(passwordEncoder.encode(TEST_PASSWORD))
+                .build()
         );
         csrfToken = getCsrfToken();
-        sessionId = getAuthorizedSessionId(csrfToken);
+        sessionId = getAuthorizedSessionId(csrfToken, TEST_USERNAME, TEST_PASSWORD);
     }
 
     @AfterAll
-    public static void clear(@Autowired UserRepository userRepository, @Autowired PlanEntryRepository planEntryRepository) {
-        userRepository.deleteAll();
+    public static void clear(@Autowired PlanEntryRepository planEntryRepository, @Autowired UserRepository userRepository) {
         planEntryRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -115,7 +110,7 @@ public class PlanEntryFlowTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void givenValidSession_whenGetAllPlanEntries_thenStatusOk() {
+    public void givenValidSession_whenGetUserPlanEntries_thenStatusOk() {
         given()
                 .cookie(SESSION_COOKIE_NAME, sessionId)
                 .when()
@@ -125,7 +120,7 @@ public class PlanEntryFlowTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void givenInvalidSession_whenGetAllPlanEntries_thenStatusUnauthorized() {
+    public void givenInvalidSession_whenGetUserPlanEntries_thenStatusUnauthorized() {
         given()
                 .cookie(SESSION_COOKIE_NAME, "invalid")
                 .when()
@@ -135,7 +130,7 @@ public class PlanEntryFlowTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void givenNoSession_whenGetAllPlanEntries_thenStatusUnauthorized() {
+    public void givenNoSession_whenGetUserPlanEntries_thenStatusUnauthorized() {
         when()
                 .get("/api/plan-entries")
                 .then()

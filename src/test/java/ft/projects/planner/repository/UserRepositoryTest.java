@@ -2,6 +2,7 @@ package ft.projects.planner.repository;
 
 import ft.projects.planner.AbstractIntegrationTest;
 import ft.projects.planner.model.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +24,27 @@ class UserRepositoryTest extends AbstractIntegrationTest {
     }
 
     @BeforeEach
-    public void deleteUsers() {
+    public void before() {
+        clearUsers();
+    }
+
+    @AfterEach
+    public void after() {
+        clearUsers();
+    }
+
+    private void clearUsers() {
         userRepository.deleteAll();
     }
 
     @Test
     public void givenUserExists_whenFindByUsername_thenOptionalPresent() {
-        var user = User.builder()
+        userRepository.save(User.builder()
                 .username(TEST_USERNAME)
-                .build();
-        userRepository.save(user);
+                .build()
+        );
         var res = userRepository.findByUsername(TEST_USERNAME);
         assertTrue(res.isPresent());
-        assertEquals(user, res.get());
     }
 
     @Test

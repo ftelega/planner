@@ -1,7 +1,6 @@
 package ft.projects.planner.controller;
 
 import ft.projects.planner.exception.PlannerExceptionResponse;
-import ft.projects.planner.model.RegisterResponse;
 import ft.projects.planner.model.UserRequest;
 import ft.projects.planner.model.UserResponse;
 import ft.projects.planner.service.UserService;
@@ -32,14 +31,14 @@ public class UserController {
 
     @Operation(summary = "Register", description = "Register User", tags = { "user" })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Successfully registered", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)) }),
+            @ApiResponse(responseCode = "201", description = "Successfully registered", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid Request Body", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = PlannerExceptionResponse.class)) }),
             @ApiResponse(responseCode = "403", description = "Invalid Csrf Token", content = {  @Content() })
         }
     )
     @Parameter(name = "X-XSRF-TOKEN", description = "Csrf Token Header", required = true, in = ParameterIn.HEADER, allowEmptyValue = true)
     @PostMapping(path = "/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> register(@RequestBody UserRequest userRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userRequest));
     }
 

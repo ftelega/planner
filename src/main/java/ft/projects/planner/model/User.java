@@ -20,6 +20,4 @@ public class User {
     private UUID Uuid;
     private String username;
     private String password;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private List<PlanEntry> planEntries;
 }

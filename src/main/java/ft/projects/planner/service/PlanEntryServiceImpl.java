@@ -2,7 +2,6 @@ package ft.projects.planner.service;
 
 import ft.projects.planner.exception.Exceptions;
 import ft.projects.planner.exception.PlannerException;
-import ft.projects.planner.model.CreatePlanEntryResponse;
 import ft.projects.planner.model.PlanEntry;
 import ft.projects.planner.model.PlanEntryRequest;
 import ft.projects.planner.model.PlanEntryResponse;
@@ -21,25 +20,26 @@ public class PlanEntryServiceImpl implements PlanEntryService {
     private final SecurityService securityService;
 
     @Override
-    public CreatePlanEntryResponse createPlanEntry(PlanEntryRequest planEntryRequest) {
+    public PlanEntryResponse createPlanEntry(PlanEntryRequest planEntryRequest) {
         var content = planEntryRequest.content();
         validateContent(content);
-        var uuid = planEntryRepository.save(
+        var planEntry = planEntryRepository.save(
                 PlanEntry.builder()
                         .content(content)
                         .date(LocalDate.now())
                         .user(securityService.getCurrentUserFromAuthentication())
                         .build()
-        ).getUuid().toString();
-        return new CreatePlanEntryResponse(uuid);
+        );
+        return new PlanEntryResponse(planEntry.getUuid().toString(), planEntry.getContent(), planEntry.getDate());
     }
 
     @Override
-    public List<PlanEntryResponse> getAllPlanEntries() {
+    public List<PlanEntryResponse> getUserPlanEntries() {
+        var user = securityService.getCurrentUserFromAuthentication();
         return planEntryRepository.findAll()
                 .stream()
-                .filter(p -> p.getUser().getUsername().equals(securityService.getCurrentUserFromAuthentication().getUsername()))
-                .map(p -> new PlanEntryResponse(p.getContent(), p.getDate()))
+                .filter(p -> p.getUser().getUuid().equals(user.getUuid()))
+                .map(p -> new PlanEntryResponse(p.getUuid().toString(), p.getContent(), p.getDate()))
                 .toList();
     }
 

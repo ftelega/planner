@@ -48,4 +48,10 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(new UserRequest(null, null))));
         res.andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
+
+    @Test
+    public void whenLogin_thenStatusOk() throws Exception {
+        var res = mockMvc.perform(MockMvcRequestBuilders.post("/api/users/login"));
+        res.andExpect(MockMvcResultMatchers.status().isOk());
+    }
 }
